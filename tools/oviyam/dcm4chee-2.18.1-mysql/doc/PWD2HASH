@@ -1,0 +1,28 @@
+UPDATE INSTRUCTIONS FOR HASHED PASSWORDS:
+========================================
+
+The login module has been changed to store the (readable) password as hash
+values for security reasons. (see: options "hashEncoding","hashCharset" and 
+"hashAlgorithm" in login-config.xml.
+
+In order to keep be able to login (jmx-console, dcm4chee-web, twiddle), 
+you have to update the password column to <hashed-passwd> values!
+(BASE64 encoded SHA hash).
+
+To get the <hashed-passwd> for a <plain-text-passwd> you can use the
+pwd2hash utility in <DCM4CHEE_HOME>/bin:
+> java -jar pwd2hash.jar <plain-text-passwd>
+
+To change password column perform following SQL statement:
+> UPDATE users SET passwd='<hashed-passwd>' WHERE passwd='<plain-text-passwd>';
+or
+> UPDATE users SET passwd='<hashed-passwd>' WHERE user_id='<user-id>';
+
+using your favoured SQL client for your database.
+
+The hash values for the two initial passwords are:
+	admin:0DPiKuNIrrVmD8IUCuw1hQxNqZc=
+	user:Et6pb+wgWTVmq3VpLJlJWWgzrck=
+
+e.g. To change password admin:
+> UPDATE users SET passwd='0DPiKuNIrrVmD8IUCuw1hQxNqZc=' WHERE passwd='admin';

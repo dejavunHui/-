@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dataset [
+<!ELEMENT dataset (attr*)>
+<!ELEMENT attr (#PCDATA | item)*>
+<!ELEMENT item (#PCDATA | attr)*>
+<!ATTLIST attr tag CDATA #REQUIRED>
+]>
+<dataset>
+<!-- Specific Character Set -->
+  <attr tag="00080005">ISO_IR 100</attr>
+<!-- SOP Class UID -->
+  <attr tag="00080016">1.2.840.10008.5.1.4.32.2</attr>
+<!-- SOP Instance UID -->
+  <attr tag="00080018">1.2.3.4</attr>
+<!-- General Purpose Scheduled Procedure Step Status -->
+  <attr tag="00404001">SCHEDULED</attr>
+<!-- General Purpose Scheduled Procedure Step Priority -->
+  <attr tag="00404003">MEDIUM</attr>
+<!-- Scheduled Processing Applications Code Sequence -->
+  <attr tag="00404004"/>
+<!-- Scheduled Procedure Step Start Date and Time -->
+  <attr tag="00404005">200504021400</attr>
+<!-- Multiple Copies Flag -->
+  <attr tag="00404006">N</attr>
+<!-- Scheduled Procedure Step ID -->
+  <attr tag="00404009">SPS1234</attr>
+<!-- Expected Completion Date and Time -->
+  <attr tag="00404011">200504030900</attr>
+<!-- Scheduled Workitem Code Sequence -->
+  <attr tag="00404018">
+    <item>
+<!-- Code Value -->
+      <attr tag="00080100">110005</attr>
+<!-- Coding Scheme Designator -->
+      <attr tag="00080102">DCM</attr>
+<!-- Code Meaning -->
+      <attr tag="00080104">Interpretation</attr>
+    </item>
+  </attr>
+<!-- Input Availability Flag -->
+  <attr tag="00404020">COMPLETE</attr>
+<!-- Scheduled Station Name Code Sequence -->
+  <attr tag="00404025">
+    <item>
+<!-- Code Value -->
+      <attr tag="00080100">REPORTER_1</attr>
+<!-- Coding Scheme Designator -->
+      <attr tag="00080102">99MESA2005</attr>
+<!-- Code Meaning -->
+      <attr tag="00080104">REPORTER_1</attr>
+    </item>
+  </attr>
+<!-- Scheduled Station Class Code Sequence -->
+  <attr tag="00404026">
+    <item>
+<!-- Code Value -->
+      <attr tag="00080100">REPORTER</attr>
+<!-- Coding Scheme Designator -->
+      <attr tag="00080102">99MESA2005</attr>
+<!-- Code Meaning -->
+      <attr tag="00080104">REPORTER</attr>
+    </item>
+  </attr>
+<!-- Scheduled Station Geographic Location Code Sequence -->
+  <attr tag="00404027"/>
+<!-- Scheduled Human Performers Sequence -->
+  <attr tag="00404034">
+    <item>
+<!-- Human Performer Code Sequence -->
+      <attr tag="00404009">
+        <item>
+<!-- Code Value -->
+          <attr tag="00080100">RADIOLOGIST^JOE</attr>
+<!-- Coding Scheme Designator -->
+          <attr tag="00080102">99DCM4CHE</attr>
+<!-- Code Meaning -->
+          <attr tag="00080104">RADIOLOGIST^JOE</attr>
+        </item>
+      </attr>
+<!-- Human Performer's Organization -->
+      <attr tag="00404036">Mesa Test Hospital</attr>
+<!-- Human Performer's Name -->
+      <attr tag="00404037">RADIOLOGIST^JOE</attr>
+    </item>
+  </attr>
+<!--Referenced Request Sequence -->
+  <attr tag="0040A370">
+    <item>
+<!-- Accession Number -->
+      <attr tag="00080050">B1601Z</attr>
+<!-- Study Instance UID -->
+      <attr tag="0020000D">1.2.1</attr>
+<!-- Requested Procedure ID -->
+      <attr tag="00401001">RPID1601</attr>
+    </item>
+  </attr>
+<!-- Patient's Name -->
+  <attr tag="00100010">WASHINGTON^GEORGE</attr>
+<!-- Patient ID -->
+  <attr tag="00100020">401601</attr>
+</dataset>

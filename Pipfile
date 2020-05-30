@@ -1,0 +1,32 @@
+[[source]]
+name = "pypi"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+verify_ssl = true
+
+[dev-packages]
+ipykernel = "*"
+
+[packages]
+torch = "==1.4"
+opencv-python = "*"
+matplotlib = "*"
+pydicom = "*"
+numpy = "*"
+simpleitk = "*"
+nibabel = "*"
+argparse = "*"
+imageio = "*"
+scipy = "*"
+albumentations = "*"
+pathlib2 = "*"
+torchsummary = "*"
+torchvision = "*"
+tensorboardx = "*"
+tqdm = "*"
+click = "*"
+nilearn = "*"
+flask = "*"
+tensorboard = "*"
+
+[requires]
+python_version = "3.7"

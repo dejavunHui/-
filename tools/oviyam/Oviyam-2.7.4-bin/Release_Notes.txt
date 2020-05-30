@@ -1,0 +1,24 @@
+Oviyam 2.7.4 - Feature list:
+
+Bug(s) Resolved:
+1. OV-214 - Search filters contain Unicode characters doesn't give matching results
+2. OV-218 - Reference/Scout lines not shown for "DERIVED/MPR" image types
+3. OV-219 - Image is not loading when the viewer URL parameter Patient ID contains special character '+'
+
+Improvement(s)
+1. OV-215 - Do not remove "caret - ^" delimiter from Patient Names while displaying, as it is necessary to distinguish the name components (lastname/firstname..etc) and for query filters
+2. OV-216 - Measurements overlay shall be retained and shown again while scrolling thru a series
+3. OV-217 - Instance availability status in query results for indication
+
+Note : 
+    For dcm4chee-arc-light server, the WADO context should be "SERVER-CONTEXT/aets/AETITLE/wado". 
+    Eg. dcm4chee-arc/aets/DCM4CHEE/wado
+
+
+  
+For Tomcat Server:
+
+1. Copy all jar files from "tomcat" folder into Tomcat "Lib" folder.
+2. Uncomment the user roles,user names in "conf/tomcat-users.xml" file. 
+3. Add new user role, user name for "admin".
+4. Deploy Oviyam2.war into Tomcat "webapps" folder.

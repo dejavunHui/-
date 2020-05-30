@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- $Id$ -->
+<server>
+  <mbean code="org.dcm4chee.audit.logger.AuditLogger"
+    name="dcm4chee.archive:service=AuditLogger"
+    xmbean-dd="xmdesc/dcm4chee-auditlog-xmbean.xml">
+    <!-- Uncomment the dependency declaration, if using dcm4chee-arr 3.x
+    as Audit Record Repository, deployed in same JBoss instance, to ensure
+    that archive services are started, AFTER the Audit Record Repository
+    is ready to receive Audit Messages
+    -->
+    <depends>dcm4chee.arr:service=UDPListener</depends>
+  </mbean>
+</server>

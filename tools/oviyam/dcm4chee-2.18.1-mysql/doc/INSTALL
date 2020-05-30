@@ -1,0 +1,374 @@
+INSTALL INSTRUCTIONS FOR DCM4CHEE ARCHIVE:
+=========================================
+
+Minimum System Requirements
+JDK 5 or higher.
+512 MB RAM
+200 MB hard disk space (additional to archive storage disk space)  
+400 MHz CPU
+
+Supported Databases
+PostgreSQL 8.1+
+MySQL 4.1+
+Oracle 9i/10g
+SQL Server
+DB2 8.1+
+Firebird 2.1
+Hypersonic SQL (Embedded in JBoss AS) - not suitable for production use!
+
+For image compression/decompression, dcm4chee 2.17.4 utilize Sun's Java Advanced
+Imaging Image I/O Tools 1.1. The binary distribution packages of dcm4chee
+2.17.4 already includes necessary JARs and native libraries for Windows and
+Linux i586. For Linux-amd64 or Solaris, you have to download the SW package
+from Sun [https://jai-imageio.dev.java.net/binary-builds.html] yourself and
+replace the Linux version of libclib_jiio.so in dcm4chee-2.17.4-xxx/bin/native
+from the JAI Image IO package for Linux-amd64 or Solaris.
+
+For MAC OS X there is no native Image I/O implementation available. There is an 
+open call on the jai-imageio webpage:
+https://jai-imageio-core.dev.java.net/issues/show_bug.cgi?id=103
+Because of the missing implementation you have to change 2 files in dcm4chee
+if you want to have RID and WADO service running. Please have a look at point
+8a. how to change the files.
+
+Installation Procedure:
+
+1. Extract the binary distribution package of dcm4chee for the database
+of your choice. Avoid using a directory that has a name that contains spaces
+as installation directory.
+
+2. Download the binary distribution package of JBoss Application Server 4.2.3.GA
+from http://labs.jboss.com/jbossas/downloads and extract it into a different
+directory.
+
+3. Move to the dcm4chee-2.17.4-xxx/bin directory and execute the
+install_jboss.bat or install_jboss.sh script, as appropriate for your operating
+system, with the path of your JBoss AS installation directory as parameter.
+
+4. [4.-6. are not necessary with Hypersonic SQL] Install the Database SW - if
+not already done. You also have to copy an apropriate JDBC Driver for the
+Database to dcm4chee-2.17.4-xxx/server/default/lib/ - except for MySQL and
+PostgreSQL, which binary distribution packages of dcm4chee already contains a
+JDBC driver. Also ensure, that DB access via TCP/IP socket is enabled.
+E.g. PostgresSQL:
+
+$PGDATA/pg_hba.conf:
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          trust
+
+5. Initiate the archive database instance: pacsdb using create DDL script
+dcm4chee-2.17.4-xxx/sql/create.xxx.
+
+E.g.: PostgreSQL
+> export PGUSER=postgres
+> createdb pacsdb
+> psql pacsdb -f dcm4chee-2.17.4-psql/sql/create.psql
+
+E.g.: MySQL
+> mysql -uroot
+mysql> create database pacsdb;
+mysql> grant all on pacsdb.* to 'pacs'@'localhost' identified by 'pacs';
+mysql> \q
+> mysql -upacs -ppacs pacsdb < dcm4chee-2.17.4-mysql/sql/create.mysql
+
+6. Adjust the Database connection configuration (host, port, DB name, user
+password) of the archive:
+
+dcm4chee-2.17.4-xxx/server/default/deploy/pacs-xxx-ds.xml
+
+according your Database configuration. 
+
+7. Set environment variable JAVA_HOME to JDK location.
+
+8. Adjust maximum allocation of heap memory: 
+[Windows]: dcm4chee-2.17.4-xxx/bin/run.bat:
+rem Sun JVM memory allocation pool parameters. Modify as appropriate.
+set JAVA_OPTS=%JAVA_OPTS% -Xms128m -Xmx512m
+[Linux/Unix/MAC OS X]: dcm4chee-2.17.4-xxx/bin/run.conf
+# Specify options to pass to the Java VM.
+if [ "x$JAVA_OPTS" = "x" ]; then
+   JAVA_OPTS="-Xms128m -Xmx512m ..
+fi
+
+according available RAM and memory requirements of other processes on this node. 
+E.g.: if only 512 MB RAM are available, you should decrease the default
+value -Xmx512m to (e.g.) -Xmx300.
+
+8a. MAC OS X specific changes for RID/WADO service:
+Please edit the following files and exchange
+"com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" with
+"com.sun.image.codec.jpeg.JPEGImageEncoder" for the ImageWriterClass:
+
+$DCM4CHEE_HOME/server/default/conf/xmdesc/dcm4chee-rid-xmbean.xml:
+@@ -124,7 +124,7 @@
+       <name>ImageWriterClass</name>
+       <type>java.lang.String</type>
+       <descriptors>
+-         <value value="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
++         <value value="com.sun.image.codec.jpeg.JPEGImageEncoder" />
+       </descriptors>
+    </attribute>
+
+and $DCM4CHEE_HOME/server/default/conf/xmdesc/dcm4chee-wado-xmbean.xml:
+@@ -128,7 +128,7 @@
+       <name>ImageWriterClass</name>
+       <type>java.lang.String</type>
+       <descriptors>
+-         <value value="com.sun.media.imageioimpl.plugins.jpeg.CLibJPEGImageWriter" />
++         <value value="com.sun.image.codec.jpeg.JPEGImageEncoder" />
+       </descriptors>
+    </attribute>
+
+9. To test your installation, move to the dcm4chee-2.17.4-xxx/bin directory
+and execute the run.bat or run.sh script, as appropriate for your operating
+system. Your output should look like the following and contain no error or
+exception messages:
+
+=========================================================================
+
+  JBoss Bootstrap Environment
+
+  JBOSS_HOME: /home/gunter/dcm4chee-2.17.4-psql
+
+  JAVA: /usr/lib/jvm/java-6-sun/bin/java
+
+  JAVA_OPTS: -Dprogram.name=run.sh -server -Xms128m -Xmx512m
+   -Dsun.rmi.dgc.client.gcInterval=3600000
+   -Dsun.rmi.dgc.server.gcInterval=3600000 -Djava.awt.headless=true
+   -Dapp.name=dcm4chee -Djava.net.preferIPv4Stack=true
+   -Djava.library.path=/home/gunter/dcm4chee-2.17.4-psql/bin/native
+
+  CLASSPATH: /home/gunter/dcm4chee-2.17.4-psql/bin/run.jar:
+   /usr/lib/jvm/java-6-sun/lib/tools.jar
+
+=========================================================================
+
+17:18:49,573 INFO  [Server] Starting JBoss (MX MicroKernel)...
+17:18:49,574 INFO  [Server] Release ID: JBoss [Trinity] 4.2.3.GA
+ (build: SVNTag=JBoss_4_2_3_GA date=200807181439)
+:
+17:19:11,496 INFO  [Server] JBoss (MX MicroKernel) [4.2.3.GA
+ (build: SVNTag=JBoss_4_2_3_GA date=200807181439)] Started in 21s:919ms
+
+10. Connect to the Web Interface at http://localhost:8080/dcm4chee-web3/
+of the archive using any Web Browser (most tested are Mozilla-Firefox and
+Microsoft Internet Explorer v8.x). You should get the User Login Screen.
+Login in using default Administrator account 'admin', with password 'admin'.
+
+11. Connect to JBoss's JMX Console at http://localhost:8080/jmx-console/ and
+login using also the Administrator account 'admin', with password 'admin'.
+
+Follow the link "group=ONLINE_STORAGE,service=FileSystemMgt" under the
+"dcm4chee.archive" heading to the configuration page for the File System
+Management service associated to the File System Group "ONLINE_STORAGE".
+
+Invoke the operation addRWFileSystem(), with argument dirPath specifying
+the directory, where the Storage SCP Service shall store received
+objects/images.
+
+(If no Storage File System is configured, the archive will auto-configure
+dcm4chee-2.17.4-xxx/server/default/archive as Storage File System, when
+receiving the first object/image)
+
+12. [Optional] Change the default AE Title
+Connect to JBoss's JMX Console at http://localhost:8080/jmx-console/ and login
+using also the Administrator account 'admin', with password 'admin'.
+
+Follow the link "service=AE" to the configuration page for AE Configuration
+Service under the "dcm4chee.archive" heading.
+
+Invoke the operation "updateAETitle()" with "DCM4CHEE" as parameter "prevAET"
+and the new AE Title as parameter newAET.
+
+13. [Optional] At default configuration, received images are stored as received
+- in particular, no compression is performed. Lossless compression of received
+uncompressed images can be activated by attribute "CompressionRules" in the
+configuration page for the Storage SCP Service (service=StoreScp). E.g. set it
+to "JLSL", to compress all type of images received from any Storage SCU using
+JPEG-LS Lossless codec.
+
+14. [Optional] The directories used for caching generated JPEG representations
+of archived images requested by Web Access to DICOM Persistent Objects (WADO)
+can be specified by attributes "CacheDataRootDirectory" and 
+"CacheJournalRootDirectory" in the configuration page for the WADO Service
+(service=WADOService).
+Defaults: dcm4chee-2.17.4-xxx/server/default/wadocachedata and 
+          dcm4chee-2.17.4-xxx/server/default/wadocachejournal.
+
+The directory used for caching generated PDF representations of archived
+Structured Report Documents requested by IHE Retrieve Information for Display
+(RID) Services can be specified by modifying BASE_DIR=docstore/rid/store in
+file conf/dcm4chee-docstore/dcm4chee-docstore-cfg.xml (this file will not
+
+15. Send some object/images to the archive's Storage SCP, e.g. by using the 
+send utility of the dcm4che 2.0 core package available at Sourceforge
+(http://www.sourceforge.net/projects/dcm4che). E.g:
+
+> dcm4che-2.0.21/bin/dcmsnd DCM4CHEE@localhost:11112 ~/mesa/storage/modality/MR
+
+Refresh the Web Interface (http://localhost:8080/dcm4chee-web3/), which shall 
+now show the the list of received studies.
+
+Expand one study row to show contained series. Expand one of these series
+to show contained instances. In the case of images, you can follow the image
+icon on the right, to invoke a http WADO request for a JPEG presentation of
+this image, which will be displayed in a separate browser window.
+
+16. To test object retrieval, you need an external Storage SCP acting as
+Move Destination, e.g. by using the receiver utility of the dcm4che 2.0 core:
+
+> dcm4che-2.0.21/bin/dcmrcv 11113
+13:55:14,782 INFO   - Start listening on 0.0.0.0/0.0.0.0:11113
+Start Server listening on port 11113
+
+You also need to configure an additional Application Entity Title identifying
+this Move Destination using "AE Management" function of the Web Interface.
+E.g. new AET
+AE Title: DCMRCV
+Hostname: localhost
+Port:     11113
+
+Switch back to the Study List ("Folder"), mark studies to retrieve using the
+check box on the right, select "DCMRCV" as send destination in the combo box
+above and click on the send button left from it.
+
+17. If that works, you may stop the archive by Ctrl+C in the console you have
+started it, and 
+[Windows]: install it as Windows service executing install_service.bat
+or 
+[Redhat Linux]: copy the init script dcm4chee_init_redhat.sh to /etc/init.d/
+and adjust it according your installation location of the archive and the JDK
+and under which user the archive application shall run
+or
+[MAC OS X]: copy the init script dcm4chee.plist to /Library/LaunchDaemons and
+register it with launchctl load /Library/LaunchDaemons/dcm4chee.plist
+and adjust it according your installation location of the archive and the JDK
+and under which user the archive application shall run.
+For more information on launchd look at:
+http://developer.apple.com/macosx/launchd.html
+
+
+DEPLOY DCM4CHEE MEDIA CREATOR 2.17.1 with DCM4CHEE ARCHIVE:
+==========================================================
+Starting with dcm4chee-2.13.0, Media Creator 2.x (dcm4chee-cdw-2.x) is
+no longer included in the binary distribution package of the archive
+application, but provided in a separate binary distribution package, also
+available at http://sourceforge.net/projects/dcm4che .
+
+You may deploy dcm4chee-cdw-2.17.1 in the same JBoss instance as dcm4che archive:
+
+1. Download and extract the binary distribution package of dcm4chee-cdw-2.17.1.
+
+2. Move to the dcm4chee-2.17.4-xxx/bin directory and execute the
+install_cdw.bat or install_cdw.sh script, as appropriate for your operating
+system, with the path of the dcm4chee-cdw-2.17.1 installation directory as
+parameter.
+
+
+DEPLOY DCM4CHEE XDS REPOSITORY 1.0.2 with DCM4CHEE ARCHIVE:
+==========================================================
+There is a separate binary distribution packages for dcm4chee XDS Repository
+1.0.2 (dcm4chee-xds-1.0.2) available at
+http://sourceforge.net/projects/dcm4che .
+You may deploy dcm4chee-xds-1.0.2 in the same JBoss instance as dcm4che
+archive:
+
+1. Download and extract the binary distribution package of dcm4chee-xds-1.0.2.
+
+2. Download the binary distribution package of JBoss Web Service
+jbossws-3.0.1-native-2.0.4.GA from http://www.jboss.org/jbossws/downloads
+and extract it into a different directory.
+
+3. Move to the dcm4chee-2.17.4-xxx/bin directory and execute the
+install_xds.bat or install_xds.sh script, as appropriate for your operating
+system, with the path of the dcm4chee-xds-1.0.2 installation directory as
+parameter.
+
+4. Execute the patch_jbossws.bat or patch_jbossws.sh script, as appropriate
+for your operating system, with the path of the dcm4chee-xds-1.0.2 installation
+installation directory as parameter. Necessary to accept faulty
+(AttachmentPart Id mismatch) SwA (SOAP with Attachment) requests from Axis2
+based Web Service clients and to disable schema validation during deployment,
+which requires internet access. If you need a http proxy for internet access
+you can configure http.proxyHost! (see run.conf or run.bat)
+
+5. Only applicable for JDK5 version of jboss-4.2.3.GA in a JDK6 environment:
+   Execute the patch_jdk6_jbossws.bat or patch_jdk6_jbossws.sh script, as appropriate for your operating system.
+   This copies several jar files to JBOSS endorsed directory to avoid conflicts between JDK Webservice Stack and JBOSS WS.
+
+DEPLOY DCM4CHEE AUDIT RECORD REPOSITORY 3.0.11 with DCM4CHEE ARCHIVE:
+===================================================================
+Starting with dcm4chee-2.12.0, the binary distribution package of the archive
+application does NOT longer include dcm4chee Audit Record Repository 2.x
+(dcm4chee-arr-2.x).
+There are now a separate binary distribution packages for dcm4chee Audit Record
+Repository 3.0.11 (dcm4chee-arr-3.0.11) available at
+http://sourceforge.net/projects/dcm4che .
+You may deploy dcm4chee-arr-3.0.11 in the same JBoss instance as dcm4che archive:
+
+1. Download and extract the binary distribution package of dcm4chee-arr-3.0.11
+for the database of your choice for storage of audit records. - It may differ
+from the database used for dcm4chee archive.
+
+2. Move to the dcm4chee-2.17.4-xxx/bin directory and execute the
+install_arr.bat or install_arr.sh script, as appropriate for your operating
+system, with the path of the dcm4chee-arr-3.0.11 installation directory as
+parameter.
+
+3a. If the Audit Record Repository shall use a different database instance than
+the archive to store received Audit Records, create the audit record repository
+database instance: arrdb, and grant sufficient privileges to the DB user,
+configured in the datasource descriptor arr-xxx-ds.xml.
+Optionally, you may also initialize the database using create DDL script
+dcm4chee-arr-3.0.11-xxx/sql/dcm4chee-arr-xxx.ddl. Otherwise, the database will
+be initialized automatically at first startup of the application.
+
+4b. If the Audit Record Repository shall share the database instance already
+used by the archive, you have to modify database name - but NOT the JNDI name!
+-, user and password in the datasource descriptor arr-xxx-ds.xml, to match with
+the values specified in the datasource descriptor pacs-xxx-ds.xml for the
+archive database.
+Optionally, you may update the database with dcm4chee-arr specific tables using
+modified create DDL script dcm4chee-arr-3.0.11-xxx/sql/dcm4chee-arr-xxx.ddl:
+you have to remove or comment out the creation of already exisiting 'code'
+table. But missing tables will be also initialized automatically at first
+startup of the application.
+
+
+MIGRATE AUDIT RECORDS RECEIVED BY DCM4CHEE AUDIT RECORD REPOSITORY 2.x TO 3.x:
+=============================================================================
+Audit Records received by dcm4chee-arr-2.x and stored in database table 
+'audit_record_old' can be migrated to dcm4chee-arr-3.x by re-emission to the
+new Audit Record Repository by service 'MigrateOldARR':
+
+1. Connect to JBoss's JMX Console at http://localhost:8080/jmx-console/ and
+login using the Administrator account 'admin', with password 'admin'.
+
+Follow the link "service=MigrateOldARR" under the "dcm4chee.archive" heading.
+
+Invoke the operation emitAuditRecords(), with argument num=1, to test the
+migration on the first Audit Record in table audit_record_old.
+
+Check in the Audit Record Repository Web Application
+(http://localhost:8080/dcm4chee-arr) if the record is now stored by 
+dcm4chee-arr-3.x.
+
+2. Determine the number of Audit Records to migrate by (e.g.) executing
+
+SELECT count(*) FROM  audit_record_old
+
+using any SQL client of your database.
+Estimate the migration time for all Audit Records by configured 
+
+EmissionInterval x count.
+
+If the estimated time exeeds several hours, you may consider
+
+- to split the migration in chunks of records, and/or
+- decrease the configured EmissionInterval from default 100 ms (but which will
+  increase the load for the Database during the task is running)
+
+3. Invoke the operation emitAuditRecords(), with argument num set to the
+maximal number of audit records to migrate/emit by this operation, until no
+further record will be migrated/emited (=value of attribute LastEmittedPk
+matches the last record received by dcm4chee-arr 2.x.). 
